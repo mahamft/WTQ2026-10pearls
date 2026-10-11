@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VoltWise — Consumer Electricity Intelligence Platform</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Icons, Chart.js & Markdown -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="theme-dark">
+
+  <div class="app-layout">
+    
+    <!-- 1. LEFT SIDEBAR NAVIGATION -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-logo">
+          <i class="fa-solid fa-bolt-lightning"></i>
+        </div>
+        <div class="brand-info">
+          <h2>Volt<span class="brand-accent">Wise</span></h2>
+          <span class="brand-sub">Pakistan Energy Hub</span>
+        </div>
+      </div>
+
+      <!-- Consumer Profile Quick Card -->
+      <div class="consumer-profile-card" id="profileTrigger">
+        <div class="profile-avatar" id="sidebarAvatar">A</div>
+        <div class="profile-meta">
+          <strong class="consumer-name" id="sidebarConsumerName">Ahmed Khan</strong>
+          <span class="consumer-disco" id="sidebarDisco"><i class="fa-solid fa-location-dot"></i> Karachi (K-Electric)</span>
+        </div>
+        <i class="fa-solid fa-chevron-right profile-arrow"></i>
+      </div>
+
+      <!-- Nav Links -->
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">MAIN MENU</div>
+        
+        <button class="nav-item active" data-view="viewDashboard">
+          <i class="fa-solid fa-house"></i>
+          <span>Overview & Audit</span>
+        </button>
+        
+        <button class="nav-item" data-view="viewAnalytics">
+          <i class="fa-solid fa-chart-simple"></i>
+          <span>Usage Trends & Slabs</span>
+        </button>
+        
+        <button class="nav-item" data-view="viewCopilot">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <span>AI Bill Advisor</span>
+          <span class="nav-badge">GPT/Gemini</span>
+        </button>
+
+        <button class="nav-item" data-view="viewSavings">
+          <i class="fa-solid fa-leaf"></i>
+          <span>Bill Reduction & Solar</span>
+        </button>
+
+        <button class="nav-item" data-view="viewKnowledge">
+          <i class="fa-solid fa-book-open"></i>
+          <span>Tariff & Tax Guide</span>
+        </button>
+
+        <div class="nav-section-title">INTEGRATIONS</div>
+
+        <button class="nav-item" id="fetchOnlineModalBtn">
+          <i class="fa-solid fa-building-columns"></i>
+          <span>Fetch Online Bill</span>
+        </button>
+      </nav>
+
+      <!-- Sidebar Footer (Evaluator Mode Toggle) -->
+      <div class="sidebar-footer">
+        <div class="eval-mode-box">
+          <div class="eval-info">
+            <span class="eval-title"><i class="fa-solid fa-code-compare"></i> Competition Hub</span>
+            <span class="eval-sub">WTQ Test Batch & CSV</span>
+          </div>
+          <button id="batchModalBtn" class="btn-eval-run">Batch</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 2. MAIN APP CONTENT CONTAINER -->
+    <div class="main-wrapper">
+      
+      <!-- Top Bar -->
+      <header class="header-bar">
+        <div class="header-left">
+          <h1 class="page-title" id="pageTitleHeading">Electricity Bill Intelligence & Audit</h1>
+          <p class="page-subtitle" id="pageSubtitleText">Real-time breakdown of energy units, fuel adjustments, and NEPRA tariff slabs.</p>
+        </div>
+
+        <div class="header-right">
+          <!-- Quick Consumer Number Search / Fetch -->
+          <div class="quick-fetch-input">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="consumerNoInput" placeholder="Enter Consumer # (e.g. 0400012345678)" value="0400084321901">
+            <button id="quickFetchBtn" class="btn-fetch-pill">Fetch</button>
+          </div>
+
+          <!-- Upload Button -->
+          <label class="btn-upload-top" title="Upload Bill Photo or PDF">
+            <i class="fa-solid fa-arrow-up-from-bracket"></i>
+            <span>Upload Bill</span>
+            <input type="file" id="globalFileInput" accept="image/*" class="hidden-input">
+          </label>
+        </div>
+      </header>
+
+      <!-- VIEW 1: OVERVIEW & BILL AUDIT (Default View) -->
+      <section id="viewDashboard" class="view-panel active">
+        
+        <!-- Active Document Ribbon & Selector -->
+        <div class="doc-ribbon-card">
+          <div class="ribbon-left">
+            <div class="doc-icon-box">
+              <i class="fa-solid fa-file-invoice-dollar"></i>
+            </div>
+            <div class="doc-details">
+              <div class="doc-title-row">
+                <span class="active-doc-name" id="currentDocTitle">KESC_0008.png</span>
+                <span class="doc-status-tag" id="currentDocStatusTag">K-Electric • A1-R Residential</span>
+              </div>
+              <span class="doc-sub-info" id="currentDocSub">Billing Month: April 2026 • Sanctioned Load: 3.0 kW</span>
+            </div>
+          </div>
+
+          <div class="ribbon-right">
+            <select id="billSelectDropdown" class="bill-dropdown-select">
+              <option value="" disabled selected>Switch Bill Document...</option>
+            </select>
+            <button id="auditBillBtn" class="btn-audit-hero">
+              <i class="fa-solid fa-shield-halved"></i>
+              <span>Re-Audit Bill</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 Hero Financial Metric Cards -->
+        <div class="hero-kpi-grid">
+          
+          <div class="kpi-card kpi-card-green">
+            <div class="kpi-header">
+              <span class="kpi-title">Amount Payable (Within Due Date)</span>
+              <i class="fa-solid fa-circle-check kpi-icon"></i>
+            </div>
+            <div class="kpi-amount" id="cardPayableWithin">PKR 3,430</div>
+            <div class="kpi-subtext" id="cardDueDateNote"><i class="fa-regular fa-calendar"></i> Due by: <strong>21-Apr-2026</strong></div>
+          </div>
+
+          <div class="kpi-card kpi-card-red">
+            <div class="kpi-header">
+              <span class="kpi-title">Amount Payable (After Due Date)</span>
+              <i class="fa-solid fa-triangle-exclamation kpi-icon"></i>
+            </div>
+            <div class="kpi-amount text-danger" id="cardPayableAfter">PKR 3,716</div>
+            <div class="kpi-subtext" id="cardSurchargeNote"><i class="fa-solid fa-circle-plus"></i> Late Surcharge: <strong>+PKR 286</strong></div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-title">Units Consumed (This Month)</span>
+              <i class="fa-solid fa-bolt kpi-icon text-cyan"></i>
+            </div>
+            <div class="kpi-amount text-cyan" id="cardUnitsConsumed">151 <span class="unit-label">kWh</span></div>
+            <div class="kpi-subtext" id="cardSlabStatusNote"><span class="badge-protected">Protected Slab (< 200)</span></div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-title">Previous Arrears / Credit</span>
+              <i class="fa-solid fa-wallet kpi-icon text-purple"></i>
+            </div>
+            <div class="kpi-amount" id="cardArrears">PKR -0.53</div>
+            <div class="kpi-subtext text-emerald" id="cardArrearsNote"><i class="fa-solid fa-arrow-down"></i> Credit carried forward</div>
+          </div>
+
+        </div>
+
+        <!-- Main Split: Left Visual Inspector & Right Detailed Audit -->
+        <div class="audit-split-grid">
+          
+          <!-- Left: Scanned Bill Image Viewer -->
+          <div class="card-box bill-viewer-card">
+            <div class="card-box-header">
+              <div class="cb-title">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <span>Document Inspector</span>
+              </div>
+              <div class="viewer-tools">
+                <button id="rotateBtn" class="btn-tool" title="Rotate 90°"><i class="fa-solid fa-rotate-right"></i></button>
+                <button id="contrastBtn" class="btn-tool" title="High Contrast Filter"><i class="fa-solid fa-circle-half-stroke"></i></button>
+                <button id="zoomOutBtn" class="btn-tool" title="Zoom Out"><i class="fa-solid fa-minus"></i></button>
+                <button id="zoomInBtn" class="btn-tool" title="Zoom In"><i class="fa-solid fa-plus"></i></button>
+                <button id="resetZoomBtn" class="btn-tool" title="Reset View"><i class="fa-solid fa-expand"></i></button>
+              </div>
+            </div>
+
+            <div class="viewer-viewport" id="viewerContainer">
+              <img id="billMainImage" src="" alt="Utility Bill" class="bill-rendered-image">
+            </div>
+          </div>
+
+          <!-- Right: Analytical Financial Breakdown -->
+          <div class="card-box audit-breakdown-card">
+            <div class="card-box-header">
+              <div class="cb-title">
+                <i class="fa-solid fa-chart-pie"></i>
+                <span>Itemized Cost & Surcharge Breakdown</span>
+              </div>
+              <span class="audit-badge-verified"><i class="fa-solid fa-check"></i> NEPRA Tariff Aligned</span>
+            </div>
+
+            <!-- Cost Split Progress Visual -->
+            <div class="cost-split-bar-section">
+              <div class="split-labels">
+                <span>⚡ Energy & Surcharges (83.4%)</span>
+                <span>🏛️ Taxes & Duties (16.6%)</span>
+              </div>
+              <div class="progress-split-bar">
+                <div class="split-fill energy-fill" style="width: 83.4%;"></div>
+                <div class="split-fill tax-fill" style="width: 16.6%;"></div>
+              </div>
+            </div>
+
+            <!-- Charges & Taxes Tables -->
+            <div class="tables-dual-grid">
+              
+              <!-- Electricity Charges -->
+              <div class="sub-table-container">
+                <div class="sub-table-header">
+                  <h5>⚡ Electricity Charges (<span id="totalChargesHeading">PKR 2,860.62</span>)</h5>
+                </div>
+                <div class="table-scroll-area">
+                  <table class="itemized-table" id="chargesItemTable">
+                    <thead>
+                      <tr>
+                        <th>Charge Line</th>
+                        <th>Type</th>
+                        <th class="text-right">PKR</th>
+                      </tr>
+                    </thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Taxes & Levies -->
+              <div class="sub-table-container">
+                <div class="sub-table-header">
+                  <h5>🏛️ Taxes & Levies (<span id="totalTaxesHeading">PKR 569.62</span>)</h5>
+                </div>
+                <div class="table-scroll-area">
+                  <table class="itemized-table" id="taxesItemTable">
+                    <thead>
+                      <tr>
+                        <th>Tax Line</th>
+                        <th>Type</th>
+                        <th class="text-right">PKR</th>
+                      </tr>
+                    </thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Meter Reading Data Row -->
+            <div class="reading-meta-bar">
+              <div class="rm-item">
+                <span class="rm-label">Prev Reading</span>
+                <strong id="rmPrevReading">8,819</strong>
+              </div>
+              <div class="rm-arrow">&rarr;</div>
+              <div class="rm-item">
+                <span class="rm-label">Curr Reading</span>
+                <strong id="rmCurrReading">8,970</strong>
+              </div>
+              <div class="rm-divider"></div>
+              <div class="rm-item">
+                <span class="rm-label">Reading Date</span>
+                <strong id="rmReadingDate">03-Apr-2026</strong>
+              </div>
+              <div class="rm-divider"></div>
+              <div class="rm-item">
+                <span class="rm-label">Issue Date</span>
+                <strong id="rmIssueDate">07-Apr-2026</strong>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- VIEW 2: USAGE TRENDS & CHARTS -->
+      <section id="viewAnalytics" class="view-panel">
+        <div class="analytics-layout">
+          
+          <div class="analytics-hero-banner">
+            <div class="ah-left">
+              <h2>13-Month Electricity Consumption Pattern</h2>
+              <p>Visual analysis of your seasonal spikes, air conditioning summer surges, and protected tariff thresholds.</p>
+            </div>
+            <div class="ah-stat">
+              <span class="ah-stat-label">Average Monthly Units</span>
+              <span class="ah-stat-val">163 kWh / Month</span>
+            </div>
+          </div>
+
+          <!-- Charts Row -->
+          <div class="charts-grid-row">
+            
+            <div class="card-box chart-card-lg">
+              <div class="card-box-header">
+                <div class="cb-title">
+                  <i class="fa-solid fa-chart-column"></i>
+                  <span>Monthly Units (kWh) vs 200 Units Protected Slab</span>
+                </div>
+                <span class="legend-badge"><span class="dot-red"></span> > 200 kWh Unprotected</span>
+              </div>
+              <div class="chart-container">
+                <canvas id="usageBarChart"></canvas>
+              </div>
+            </div>
+
+            <div class="card-box chart-card-sm">
+              <div class="card-box-header">
+                <div class="cb-title">
+                  <i class="fa-solid fa-chart-pie"></i>
+                  <span>Bill Cost Breakdown</span>
+                </div>
+              </div>
+              <div class="chart-container donut-container">
+                <canvas id="billDonutChart"></canvas>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      <!-- VIEW 3: AI COPILOT & ADVISOR -->
+      <section id="viewCopilot" class="view-panel">
+        <div class="copilot-pro-layout">
+          
+          <div class="copilot-left-sidebar">
+            <h4>💡 Popular Inquiries</h4>
+            <p>Ask anything about your bill, taxes, tariff slabs or calculations:</p>
+            
+            <div class="query-pills-list">
+              <button class="query-pill" data-q="How much of my bill is taxes and duties?">
+                <i class="fa-solid fa-percent"></i>
+                <span>How much of my bill is taxes?</span>
+              </button>
+              <button class="query-pill" data-q="How many months in my history went above 200 units?">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Months above 200 units threshold?</span>
+              </button>
+              <button class="query-pill" data-q="Explain Fuel Price Adjustment (FPA) and quarterly adjustments on my bill.">
+                <i class="fa-solid fa-gas-pump"></i>
+                <span>Explain FPA & QTA charges</span>
+              </button>
+              <button class="query-pill" data-q="What is the late payment surcharge and exact due date?">
+                <i class="fa-solid fa-clock"></i>
+                <span>Late payment surcharge & deadline</span>
+              </button>
+              <button class="query-pill" data-q="How can I reduce my bill by 30% next month based on this consumption?">
+                <i class="fa-solid fa-leaf"></i>
+                <span>Actionable tips to reduce this bill</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="copilot-chat-area">
+            <div class="chat-thread-box" id="copilotThread">
+              <div class="copilot-msg bot">
+                <div class="msg-avatar-icon"><i class="fa-solid fa-bolt-lightning"></i></div>
+                <div class="msg-bubble-content">
+                  <strong>VoltWise AI Copilot</strong>
+                  <p>Welcome! I have audited your selected electricity bill. Ask any question in plain English or Roman Urdu — I will give you grounded calculations and plain language explanations.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="chat-composer-tray">
+              <textarea id="copilotUserPrompt" placeholder="Type your question about this bill... (e.g. Break down my electricity duty and fuel adjustments)"></textarea>
+              <button id="copilotSubmitBtn" class="btn-send-message">
+                <i class="fa-solid fa-paper-plane"></i>
+                <span>Send</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- VIEW 4: BILL REDUCTION & SOLAR SAVINGS -->
+      <section id="viewSavings" class="view-panel">
+        <div class="savings-hub-container">
+          
+          <div class="savings-header-card">
+            <h2>Electricity Bill Optimization & Solar ROI Calculator</h2>
+            <p>Proven actionable measures to cut down your DISCO bill by up to 50% in Pakistan.</p>
+          </div>
+
+          <!-- Interactive Calculator -->
+          <div class="savings-calc-card">
+            <div class="scc-header">
+              <h3>⚡ Peak Hours & Protected Slab Simulator</h3>
+              <p>See how maintaining under 200 units or shifting heavy loads from Peak Hours (6 PM – 10 PM) saves thousands each month.</p>
+            </div>
+
+            <div class="scc-grid">
+              <div class="scc-inputs">
+                <label>Current Monthly Units:</label>
+                <input type="range" id="savingsUnitsSlider" min="50" max="1000" value="320" class="pro-slider">
+                <div class="slider-val-readout"><span id="savingsUnitsReadout">320</span> kWh / Month</div>
+              </div>
+
+              <div class="scc-results">
+                <div class="scc-res-card">
+                  <span>Current Estimate (Unprotected)</span>
+                  <strong id="savingsCurrentCost">PKR 16,800</strong>
+                </div>
+                <div class="scc-res-card text-emerald">
+                  <span>Target with 195 Units Protected</span>
+                  <strong id="savingsOptimizedCost">PKR 7,100</strong>
+                </div>
+                <div class="scc-res-card text-cyan">
+                  <span>Monthly Pocket Savings</span>
+                  <strong id="savingsTotalPocket">PKR 9,700 (58% Savings)</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4 Pillars -->
+          <div class="playbook-pillars-grid">
+            <div class="playbook-pillar">
+              <div class="pillar-top"><i class="fa-solid fa-clock text-amber"></i> <h4>Peak Hours Discipline</h4></div>
+              <p>Peak hours (April–Oct: 6:30 PM to 10:30 PM) cost up to <strong>PKR 65/unit</strong>. Never run washing machines, water pump motors, or heavy ironing during this window.</p>
+            </div>
+            <div class="playbook-pillar">
+              <div class="pillar-top"><i class="fa-solid fa-shield-halved text-emerald"></i> <h4>The 200-Unit Gold Standard</h4></div>
+              <p>Keep your consumption below 200 units for 6 consecutive months to qualify for the <strong>Protected Consumer Tier</strong>, saving over PKR 12,000/month.</p>
+            </div>
+            <div class="playbook-pillar">
+              <div class="pillar-top"><i class="fa-solid fa-snowflake text-cyan"></i> <h4>Inverter AC 26°C Strategy</h4></div>
+              <p>Setting your Inverter AC to 26°C with Eco-mode consumes ~0.7 units/hour compared to 2.1 units/hour at 18°C. Pair with a ceiling fan for optimal room cooling.</p>
+            </div>
+            <div class="playbook-pillar">
+              <div class="pillar-top"><i class="fa-solid fa-sun text-purple"></i> <h4>Net-Metered Rooftop Solar</h4></div>
+              <p>A 5 kW On-Grid solar setup in Pakistan pays for itself in ~28 months and gives you free daytime electricity with bi-directional net-metering credits.</p>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- VIEW 5: TARIFF & TAX KNOWLEDGE BASE -->
+      <section id="viewKnowledge" class="view-panel">
+        <div class="knowledge-hub-layout">
+          <div class="kh-header">
+            <h2>NEPRA Utility Tariffs & Pakistan Tax Regulations</h2>
+            <p>Clear, transparent explanations of every line item on Pakistani electricity bills.</p>
+          </div>
+
+          <div class="articles-grid">
+            <article class="article-box">
+              <span class="ab-tag">Tariff Surcharge</span>
+              <h4>What is Fuel Price Adjustment (FPA)?</h4>
+              <p>FPA represents the variation in the actual cost of generation fuel (imported coal, RLNG, furnace oil, hydro) versus NEPRA's reference tariff. It is charged retrospectively with 1 to 2 months lag.</p>
+            </article>
+
+            <article class="article-box">
+              <span class="ab-tag">Tax Breakdown</span>
+              <h4>Understanding GST & Electricity Duty</h4>
+              <p>Standard Pakistani utility bills carry 18% General Sales Tax (GST) under the Sales Tax Act, plus 1.5% Provincial Electricity Duty (ED). Additional withholding tax (WHT) applies to non-filers on commercial meters.</p>
+            </article>
+
+            <article class="article-box">
+              <span class="ab-tag">Consumer Rights</span>
+              <h4>How to Dispute Inaccurate Meter Readings</h4>
+              <p>If your bill's present reading is ahead of your physical meter index (over-reading), photograph the meter index and file a complaint through the DISCO customer care portal or NEPRA Consumer Affairs.</p>
+            </article>
+
+            <article class="article-box">
+              <span class="ab-tag">Tariff Slabs</span>
+              <h4>Protected vs Unprotected Consumer Rules</h4>
+              <p>Protected consumers are defined as domestic consumers whose monthly consumption has consistently remained under 200 kWh for the last 6 months. Exceeding 200 units even once resets this eligibility.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- BATCH MODAL (FOR WTQ TEST DATA) -->
+  <div id="batchModal" class="modal-backdrop hidden">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fa-solid fa-layer-group"></i>
+          <h3>WTQ 2026 Batch Test & Submission Hub</h3>
+        </div>
+        <button id="closeModalBtn" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">Process all 10 test bills through Level 1 structured extraction and Level 2 grounded Q&A to generate official `level1.csv` and `level2.csv` for submission.</p>
+        
+        <div class="batch-action-row">
+          <button id="startBatchBtn" class="btn-primary-gradient full-width">
+            <i class="fa-solid fa-play"></i>
+            <span>Run Complete Batch Pipeline</span>
+          </button>
+        </div>
+
+        <div id="batchProgressBox" class="batch-progress hidden">
+          <div class="progress-bar-container">
+            <div class="progress-bar-fill" id="batchProgressBar"></div>
+          </div>
+          <div class="progress-status-text" id="batchProgressText">Processing bills...</div>
+        </div>
+
+        <div class="export-download-cards">
+          <div class="export-card">
+            <div>
+              <strong>level1.csv</strong>
+              <p>10 rows with escaped JSON</p>
+            </div>
+            <a href="/output/level1.csv" download class="btn-sm btn-outline">Download</a>
+          </div>
+          <div class="export-card">
+            <div>
+              <strong>level2.csv</strong>
+              <p>120 rows with grounded answers</p>
+            </div>
+            <a href="/output/level2.csv" download class="btn-sm btn-outline">Download</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

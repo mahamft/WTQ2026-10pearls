@@ -1,0 +1,33 @@
+# Secrets & Environments
+.env
+*.env
+.venv/
+venv/
+ENV/
+env/
+
+# Python cache & build artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# Large media & zip submission archives
+*.zip
+*.mp4
+*.mkv
+*.mov
+
+# Temporary working & staging directories
+downloaded_data/
+extracted/
+submission_staging/
+uploads/*
+!uploads/.gitkeep
+
+# IDE & OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

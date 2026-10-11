@@ -1,0 +1,8 @@
+google-genai==2.29.0
+pydantic==2.14.0
+pydantic-core==2.50.0
+Pillow==12.3.0
+python-dotenv==1.2.4
+requests==2.34.2
+Flask>=3.0.0
+flask-cors>=4.0.0
